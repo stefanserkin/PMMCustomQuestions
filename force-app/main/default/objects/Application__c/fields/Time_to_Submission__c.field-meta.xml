@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Time_to_Submission__c</fullName>
+    <description>The time lapsed between creation and submission of the Application record</description>
+    <externalId>false</externalId>
+    <formula>IF( !ISBLANK( Submitted_Date_Time__c ),
+ TEXT(Submitted_Date_Time__c - CreatedDate),
+ &quot;&quot;
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <inlineHelpText>The time lapsed between creation and submission of the Application record</inlineHelpText>
+    <label>Time to Submission</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

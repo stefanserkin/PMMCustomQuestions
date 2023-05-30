@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Number_of_Questions_per_Page__c</fullName>
+    <description>The number of questions that appear on a single page of the application</description>
+    <externalId>false</externalId>
+    <inlineHelpText>The number of questions that appear on a single page of the application</inlineHelpText>
+    <label>Number of Questions per Page</label>
+    <precision>3</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

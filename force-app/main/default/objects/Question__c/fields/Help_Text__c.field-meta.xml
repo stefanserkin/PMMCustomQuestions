@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Help_Text__c</fullName>
+    <description>Help Text to present to the applicant when encountering this field in an Application</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Help Text to present to the applicant when encountering this field in an Application</inlineHelpText>
+    <label>Help Text</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>TextArea</type>
+</CustomField>
