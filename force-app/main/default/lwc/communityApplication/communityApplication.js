@@ -1,6 +1,8 @@
 import { LightningElement, api, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getApplication from '@salesforce/apex/CommunityApplicationController.getApplication';
+import saveAnswers from '@salesforce/apex/CommunityApplicationController.saveAnswers';
+import submitApplication from '@salesforce/apex/CommunityApplicationController.submitApplication';
 
 import TEXT_ANSWER_FIELD from '@salesforce/schema/Application_Answer__c.Text_Answer__c';
 import NUMBER_ANSWER_FIELD from '@salesforce/schema/Application_Answer__c.Text_Answer__c';
@@ -20,6 +22,7 @@ export default class CommunityApplication extends LightningElement {
     wiredApplication = [];
     application;
     answers;
+    submitResult = '';
 
 
     /*********************************
@@ -43,6 +46,12 @@ export default class CommunityApplication extends LightningElement {
             : 'Application';
     }
 
+    get noQuestionsMessage() {
+        return this.application
+            ? `There are no questions assigned to the ${this.application.Application_Template__r.Name} application template.`
+            : '';
+    }
+
 
     /*********************************
      * Get application
@@ -59,7 +68,6 @@ export default class CommunityApplication extends LightningElement {
         if (result.data) {
             // Parse data
             let app = JSON.parse( JSON.stringify(result.data) );
-            console.log(':::: app => ', app);
             // Set additional answer properties for data type and help text
             app.Application_Answers__r.forEach(ans => {
                 this.setDataType(ans);
@@ -88,8 +96,8 @@ export default class CommunityApplication extends LightningElement {
 
 
     /*********************************
-     * Set boolean data type properties for an answer record. Boolean properties allow 
-     *   the data type to be checked in if:true conditionals in input components
+     * Set data type for each answer. Maps picklist value to supported
+     *   value for lightning-input's 'type' attribute
      * @param obj answer 
      * @return void
      *********************************/
@@ -114,12 +122,12 @@ export default class CommunityApplication extends LightningElement {
      * Handle input
      *********************************/
 
-    handleAnswerChange(event) {
+    handleInputChange(event) {
         const { name, value } = event.target;
         const answerId = name.substring(name.indexOf('_') + 1);
         const updatedAnswers = this.answers.map((answer) => {
             if (answer.Id === answerId) {
-                return { ...answer, Answer__c: String(value) };
+                return { ...answer, Answer__c: value };
             }
             return answer;
         });
@@ -127,16 +135,24 @@ export default class CommunityApplication extends LightningElement {
     }
 
 
-    saveAnswers() {
-
+    handleSaveAnswers() {
         // TODO - validate input
 
-        saveAnswers({ records: this.answers })
+        const records = this.answers.map((ans) => {
+            let answer = {
+                Id: ans.Id,
+                Answer__c: String(ans.Answer__c)
+            }
+            return answer;
+        });
+
+        saveAnswers({ records: records })
             .then(() => {
+                console.log('Answers are saved');
                 // Handle success message
                 const event = new ShowToastEvent({
                     title: 'Success',
-                    message: 'Thank you for your submission, but it is lousy. We have thrown it in the trash.d',
+                    message: 'Thank you for your submission, but it is lousy. We have thrown it in the trash.',
                     variant: 'success'
                 });
                 this.dispatchEvent(event);
@@ -153,6 +169,37 @@ export default class CommunityApplication extends LightningElement {
 
     }
 
+    handleSubmitApplication() {
+
+        const records = this.answers.map((ans) => {
+            let answer = {
+                Id: ans.Id,
+                Answer__c: ans.Answer__c, 
+                Field_Type__c: ans.Field_Type__c
+            }
+            return answer;
+        });
+        
+        submitApplication({ recordId: this.recordId, lstAnswerObjects: records })
+            .then(() => {
+                const event = new ShowToastEvent({
+                    title: 'Success',
+                    message: 'Thank you for your submission, but it is lousy. We have thrown it in the trash.',
+                    variant: 'success'
+                });
+                this.dispatchEvent(event);
+            })
+            .catch((error) => {
+                this.error = error;
+                console.error(this.error);
+                const event = new ShowToastEvent({
+                    title: 'Oh no. It has not done the thing',
+                    message: 'This did not go well.',
+                    variant: 'error'
+                });
+                this.dispatchEvent(event);
+            });
+    }
 
     /*********************************
      * Handle navigation
@@ -176,8 +223,6 @@ export default class CommunityApplication extends LightningElement {
         const startIndex = (this.currentPage - 1) * this.maxQuestionsPerPage;
         const endIndex = startIndex + this.maxQuestionsPerPage;
         this.currentPageAnswers = this.answers.slice(startIndex, endIndex);
-        console.log('::::: current page answers: ');
-        console.table(this.currentPageAnswers);
     }
 
     get disablePreviousButton() {

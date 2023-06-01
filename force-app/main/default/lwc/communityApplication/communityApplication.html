@@ -6,17 +6,18 @@
             <template for:each={currentPageAnswers} for:item="a">
                 <div key={a.Id} class="slds-var-m-around_medium">
                     <lightning-input type={a.type} 
-                                        name={a.Name}
-                                        label={a.Question__c} 
-                                        field-level-help={a.helpText}
-                                        onchange={handleAnswerChange}
+                                     name={a.Id} 
+                                     label={a.Question__c} 
+                                     value={a.Answer__c} 
+                                     field-level-help={a.helpText} 
+                                     onchange={handleInputChange}
                     ></lightning-input>
                 </div>
             </template>
         </template>
 
         <template if:false={currentPageAnswers}>
-            <p>No custom questions assigned.</p>
+            <p>{noQuestionsMessage}</p>
         </template>
 
         <div class="slds-var-m-around_medium">
@@ -24,7 +25,8 @@
                 <lightning-button label="Previous" variant="neutral" onclick={previousPage} disabled={disablePreviousButton}></lightning-button>
                 <lightning-button label="Next" variant="neutral" onclick={nextPage} disabled={disableNextButton}></lightning-button>
             </lightning-button-group>
-            <lightning-button variant="brand" label="Save Answers" onclick={saveAnswers} class="slds-var-m-left_medium"></lightning-button>
+            <lightning-button variant="brand" label="Save Answers" onclick={handleSaveAnswers} class="slds-var-m-left_medium"></lightning-button>
+            <lightning-button variant="brand" label="Submit Application" onclick={handleSubmitApplication} class="slds-var-m-left_medium"></lightning-button>
         </div>
     </lightning-card>
 </template>

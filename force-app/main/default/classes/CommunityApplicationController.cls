@@ -1,12 +1,17 @@
 public with sharing class CommunityApplicationController {
 
+    private static final String APPLICATION_STATUS_DRAFT = 'Draft';
+    private static final String APPLICATION_STATUS_SUBMITTED = 'Submitted';
+
     /************************************************************************
      * @param String recordId - the record id of the application
      * @return Application__c - application with nested application answers
      ************************************************************************/
 
     @AuraEnabled(cacheable=true)
-    public static Application__c getApplication(String recordId) {
+    public static Application__c getApplication(
+        String recordId
+    ) {
         try {
             return [
                 SELECT Id, 
@@ -26,6 +31,9 @@ public with sharing class CommunityApplicationController {
                                Required__c, 
                                Question__c, 
                                Answer__c, 
+                               Text_Answer__c, 
+                               Number_Answer__c, 
+                               Date_Answer__c, 
                                Source_Question__c, 
                                Source_Question__r.Help_Text__c, 
                                Source_Question__r.Min_Selectable_Options__c, 
@@ -49,20 +57,36 @@ public with sharing class CommunityApplicationController {
      ************************************************************************/
 
     @AuraEnabled(cacheable=false)
-    public static void saveAnswers(List<sObject> records) {
-        // Perform any necessary validation and processing
+    public static void saveAnswers(
+        List<sObject> records
+    ) {
+        try {
+            // Cast generic sObject to list of application answers
+            List<Application_Answer__c> lstAnswers = (List<Application_Answer__c>) records;
+            // TODO - Perform validation
 
-        // Save the answers to the Answer__c records associated with the questions
-        List<Application_Answer__c> lstAnswersToUpdate = new List<Application_Answer__c>();
-        for (sObject record : records) {
-            Application_Answer__c ans = new Application_Answer__c();
-            ans.Id = record.Id;
-            ans.Answer__c = (String) record.get('Answer__c');
-            lstAnswersToUpdate.add(ans);
+            // Update application answers
+            update lstAnswers;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
         }
+    }
 
-        if (!lstAnswersToUpdate.isEmpty()) {
-            update lstAnswersToUpdate;
+    @AuraEnabled
+    public static void submitApplication(
+        String recordId, 
+        List<sObject> lstAnswerObjects
+    ) {
+        try {
+            List<Application_Answer__c> lstAnswers = (List<Application_Answer__c>) lstAnswerObjects;
+            update lstAnswers;
+
+            Application__c app = [SELECT Id, Status__c, Submitted_Date_Time__c FROM Application__c WHERE Id = :recordId LIMIT 1];
+            app.Status__c = APPLICATION_STATUS_SUBMITTED;
+            app.Submitted_Date_Time__c = Datetime.now();
+            update app;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
         }
     }
 
